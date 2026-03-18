@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}The Pack Barber Studio{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="text-center py-20 px-8">
+    <h1 class="text-5xl md:text-7xl font-bold mb-8">
+        The Pack 
+        <span class="text-gold-main block">Barber Studio</span>
+    </h1>
+    
+    <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-12 font-light">
+        Donde estilos clásicos encuentran tendencias modernas. La mejor barbería de Suba.
+    </p>
+    
+    <a href="{% url 'lista_servicios' %}" 
+       class="bg-gold-main text-black px-12 py-4 text-lg font-bold rounded-xl hover:bg-gold-dark transition-all inline-block shadow-lg hover:shadow-xl">
+        Reserva ahora
+    </a>
+</section>
+
+<!-- Barberos Section -->
+<section class="py-20 px-8 bg-black-card">
+    <h2 class="text-4xl font-bold text-center mb-16">
+        Nuestros 
+        <span class="text-gold-main block">Maestros Barberos</span>
+    </h2>
+    
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {% for barbero in barberos %}
+            <div class="bg-black-main border-2 border-gray-800 hover:border-gold-main rounded-3xl p-10 text-center hover:scale-105 transition-all group">
+                <!-- Foto placeholder -->
+                <div class="w-32 h-32 bg-gray-700 rounded-full mx-auto mb-6 border-4 border-gold-main group-hover:border-gold-dark transition-colors"></div>
+                
+                <h3 class="text-2xl font-bold mb-3 text-white">{{ barbero.nombre }}</h3>
+                <p class="text-gold-main text-lg mb-8 font-semibold">{{ barbero.especialidad }}</p>
+                
+                <a href="#" class="bg-gold-main text-black font-bold py-4 px-8 rounded-xl w-full block hover:bg-gold-dark transition-all">
+                    Reservar
+                </a>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-20">
+                <p class="text-gray-400 text-xl">No hay barberos disponibles.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
