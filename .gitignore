@@ -1,0 +1,33 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Entorno virtual ---
+venv/
+.env/
+.env.bak
+
+# --- Archivos de Django ---
+db.sqlite3
+media/
+staticfiles/
+
+# --- Logs y cachés ---
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.sqlite3-journal
+
+# --- Configuración de IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Archivos del sistema ---
+.DS_Store
+Thumbs.db
