@@ -1,24 +1,19 @@
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicios - The Pack</title>
-</head>
-<body>
+{% block title %}Clientes - The Pack{% endblock %}
+
+{% block content %}
     <h1>Servicios de The Pack</h1>
-
+    
     {% for servicio in servicios %}
         <div>
             <h2>{{ servicio.nombre }}</h2>
             <p>Duracion: {{ servicio.duracion_min }}</p>
-            <p>Precio: {{ servicio.precio }}</p>
+            <p>Precio: ${{ servicio.precio }}</p>
         </div>
     {% empty %}
     
-        <!-- Esto se muestra si no hay barberos en la BD -->
+        <!-- Esto se muestra si no hay servicios en la BD -->
         <p>No hay Servicios registrados.</p>
     {% endfor %}
-</body>
-</html>
+{% endblock %}

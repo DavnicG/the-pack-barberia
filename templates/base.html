@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}The Pack Barber Studio{% endblock %}</title>
+</head>
+
+<body>
+     <!-- Barra de navegacion -->
+    <nav>
+        <a href="{% url 'lista_barberos'%}">Barberos</a> |
+        <a href="{% url 'lista_clientes'%}">Clientes</a> |
+        <a href="{% url 'lista_servicios'%}">Servicios</a> |
+        <a href="/admin/">Admin</a> |
+    </nav>
+     <!-- este block muestra los contenidos de cada lista -->
+    {% block content %}
+    {% endblock %}
+    
+    <footer>The Pack Barber Studio © 2026</footer>
+</body>
+</html>
