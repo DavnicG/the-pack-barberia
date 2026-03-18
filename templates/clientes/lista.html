@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes- The Pack</title>
+</head>
+<body>
+    <h1>Clientes de The Pack</h1>
+
+    {% for cliente in clientes %}
+        <div>
+            <h2>{{ cliente.nombre }}</h2>
+            <p>Teléfono: {{ cliente.telefono }}</p>
+            <p>Email: {{ cliente.email }}</p>
+            <p>Fecha de registro: {{ cliente.fecha_registro }}</p>
+        </div>
+    {% empty %}
+    
+        <!-- Esto se muestra si no hay barberos en la BD -->
+        <p>No hay Clientes registrados.</p>
+    {% endfor %}
+</body>
+</html>

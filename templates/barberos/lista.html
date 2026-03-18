@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barberos - The Pack</title>
+</head>
+<body>
+    <h1>Barberos de The Pack</h1>
+
+    {% for barbero in barberos %}
+        <div>
+            <h2>{{ barbero.nombre }}</h2>
+            <p>Teléfono: {{ barbero.telefono }}</p>
+            <p>Especialidad: {{ barbero.especialidad }}</p>
+        </div>
+    {% empty %}
+    
+        <!-- Esto se muestra si no hay barberos en la BD -->
+        <p>No hay barberos registrados.</p>
+    {% endfor %}
+</body>
+</html>
