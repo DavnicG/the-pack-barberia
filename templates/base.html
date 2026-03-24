@@ -1,44 +1,102 @@
+{% load static %}
+<!--{% load static %} le dice a Django que vamos a usar archivos estáticos (imágenes, CSS, JS).-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}The Pack Barber Studio{% endblock %}</title>
+        <!-- block title es un bloque Django: cada página hija puede
+         reemplazar este título. Si no lo reemplaza, usa "The Pack Barber Studio"
+         como valor por defecto -->
 
-    <!-- Tailwind CDN + Colores custom Figma -->
+    <!-- ===== TAILWIND CSS ===== -->
     <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Carga Tailwind desde internet (CDN). En producción lo ideal
+         sería compilarlo-->
     <script>
     tailwind.config = {
         theme: {
         extend: {
+            /* extend significa que AGREGAMOS colores a los de Tailwind,
+            no los reemplazamos. Los colores originales siguen funcionando */
             colors: {
-            'black-main': '#0A0A0A',
-            'black-card': '#151515', 
-            'gold-main': '#D4AF37',
-            'gold-dark': '#B8972E',
-            'gray-footer': '#6B7280',
+            'black-main': '#0A0A0A',    /* Fondo principal, negro profundo */
+            'gold-main': '#D4AF37',     /* Dorado principal - color del Figma */
+            'gold-dark': '#B8972E',     /* Dorado más oscuro - usado en hover */
+            'gray-footer': '#999999',   /* Gris para textos secundarios del footer */
+            'card': '#1a1a1a',          /* Negro tarjeta */
             },
             fontFamily: {
             'barber': ['Inter', 'sans-serif'],
-            }
+            }                             /* Define una fuente custom llamada "barber".
+                                            Se usa con la clase font-barber en HTML */
         }
         }
     }
     </script>
 </head>
 
-<body class="bg-black-main text-white min-h-screen">
-    <!-- HEADER -->
-    <header class="bg-black-main border-b border-gray-800 px-8 py-4 flex justify-between items-center">
-        <!-- Logo dorado -->
-        <div class="text-gold-main font-bold text-2xl">✗ The Pack</div>
+<body class="bg-black-main text-white min-h-screen font-barber">
+    <!-- 
+        bg-black-main  → fondo negro en toda la página
+        text-white     → texto blanco por defecto en toda la página
+        min-h-screen   → la página ocupa mínimo el 100% de la altura de la pantalla
+                         (evita que el footer quede flotando arriba en páginas cortas)
+    -->
+
+    <!-- ===== HEADER ===== -->
+    <header class="bg-black-main border-b border-gold-main/30 px-12 py-4 flex justify-between items-center">
+        <!-- 
+            bg-black-main         → fondo negro igual al body
+            border-b              → línea solo en la parte inferior
+            border-gold-main/30   → color dorado al 30% de opacidad (sutil)
+            px-12                 → padding horizontal (espacio interno izq/der)
+            py-4                  → padding vertical (espacio interno arr/abajo)
+            flex                  → activa Flexbox: organiza hijos en fila
+            justify-between       → separa logo y nav a los extremos
+            items-center          → centra verticalmente logo y nav
+        -->
+
+        <!-- Logo -->
+        <div class="flex items-center gap-2">
+             <!-- 
+                flex         → pone tijeras y texto en fila
+                items-center → los alinea verticalmente al centro
+                gap-2        → espacio de 8px entre tijeras y "The Pack"
+                -->
+            <img src="{% static 'img/Scissors.svg' %}" 
+                width="30" height="30" 
+                alt="Tijeras">
+                <!-- 
+                {% static '...' %} construye la URL correcta al archivo estático
+                width/height       → tamaño de la imagen en píxeles
+                alt                → texto alternativo (accesibilidad y SEO)
+                -->
+            <h1 class="text-2xl">The Pack</h1>
+            <!-- text-2xl → tamaño de fuente grande (1.5rem = 24px) -->
+        </div>
+
         <!-- Navegación -->
-        <nav class="flex gap-8">
-            <a href="{% url 'index' %}" class="hover:text-gold-main transition-colors">Inicio</a>
-            <a href="{% url 'lista_barberos' %}" class="hover:text-gold-main transition-colors">Barberos</a>
-            <a href="{% url 'lista_clientes' %}" class="hover:text-gold-main transition-colors">Clientes</a>
-            <a href="{% url 'lista_servicios' %}" class="hover:text-gold-main transition-colors">Servicios</a>
-            <a href="/admin/" class="hover:text-gold-main transition-colors">Admin</a>
+        <nav class="flex items-center gap-8">
+             <!-- 
+                flex         → links en fila horizontal
+                items-center → alineados verticalmente
+                gap-8        → espacio de 32px entre links
+            -->
+            <a href="#" class="hover:text-gold-main transition-colors">
+                Iniciar Sesión
+            </a>
+            <!-- 
+                href="#"              → por ahora no va a ningún lado (pendiente login)
+                hover:text-gold-main  → al pasar el ratón, texto se vuelve dorado
+                transition-colors     → el cambio de color es suave (animado)
+            -->
+            <a href="{% url 'lista_servicios' %}" class="hover:text-gold-main transition-colors">
+                Mis Citas
+            </a>
+            <!-- {% url 'lista_servicios' %} → Django genera la URL correcta
+                 buscando la vista con ese nombre en urls.py -->
         </nav>
     </header>
 

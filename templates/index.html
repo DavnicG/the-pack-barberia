@@ -1,27 +1,109 @@
 {% extends "base.html" %}
+<!-- 
+    extends le dice a Django que este archivo es "hijo" de base.html.
+    Hereda TODO el contenido de base.html (header, footer, Tailwind, etc.)
+    y solo reemplaza los  block  que definamos aquí
+-->
+{%load static%}
+<!-- 
+    Necesario para usar static '...' en este archivo también.
+    Aunque base.html ya lo carga, cada archivo hijo que use
+    archivos estáticos debe cargarlo de nuevo
+-->
 
 {% block title %}The Pack Barber Studio{% endblock %}
 
+<!-- 
+    Reemplaza el block title de base.html.
+    Esta página mostrará "The Pack Barber Studio" en la pestaña del navegador
+-->
+
 {% block content %}
-<!-- Hero Section -->
-<section class="text-center py-20 px-8">
-    <h1 class="text-5xl md:text-7xl font-bold mb-8">
-        The Pack 
-        <span class="text-gold-main block">Barber Studio</span>
+<!-- 
+    Todo lo que este aquí se inserta dentro del base.html.
+    Es la zona de contenido único de cada página
+-->
+
+<!-- ===== HERO SECTION ===== -->
+<section class="text-center relative py-20 px-4 bg-gradient-to-b from-black-main to-card">
+    <!--
+        text-center        → centra todo el texto de la sección
+        relative           → permite posicionar elementos hijos con absolute si se necesita
+        py-20              → padding vertical grande (80px) para dar altura al hero
+        px-4               → padding horizontal pequeño (16px)
+        bg-gradient-to-b   → gradiente que va de arriba hacia abajo
+        from-black-main    → empieza en #0A0A0A (negro puro)
+        to-card            → termina en #1a1a1a (negro tarjeta, más cálido)
+    -->
+
+    <!-- Logo principal de la barbería -->
+    <img src="{% static 'img/Logos/the-pack-dorado.svg' %}" 
+                width="250" height="250" 
+                alt="The Pack Logo Hero"
+                class="mx-auto block">
+    <!--
+        {% static '...' %} → genera la URL correcta al archivo estático
+        width/height       → tamaño en píxeles
+        alt                → descripción para accesibilidad y SEO
+        mx-auto            → centra horizontalmente (margin: auto en eje X)
+        block              → hace que la imagen ocupe su propia línea
+                             (por defecto las imágenes son inline y no se centran bien)
+    -->
+
+     <!-- Título principal -->
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-barber mb-5">
+        The Pack <span class="text-gold-main ">Barber Studio</span>
     </h1>
+    <!--
+        text-4xl       → tamaño de fuente grande
+        font-barber    → usa la fuente Inter que se definio en tailwind.config
+        mb-5           → margen inferior (20px) para separar del párrafo
+        <span>         → envuelve "Barber Studio" para darle color dorado
+                         sin afectar "The Pack" que hereda text-white del body
+    -->
     
-    <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-12 font-light">
+    <!-- Subtítulo descriptivo -->
+    <p class="text-xl text-gray-footer max-w-2xl mx-auto mb-5 font-light">
         Donde estilos clásicos encuentran tendencias modernas. La mejor barbería de Suba.
     </p>
+    <!--
+        text-xl          → tamaño mediano (1.25rem = 20px)
+        text-gray-footer → gris personalizado(#999999)
+        max-w-2xl        → ancho máximo de 672px (evita líneas muy largas)
+        mx-auto          → centra el párrafo horizontalmente
+        mb-5             → margen inferior antes del botón
+        font-light       → fuente delgada (weight 300), más elegante
+    -->
     
+    <!-- Botón de reserva -->
     <a href="{% url 'lista_servicios' %}" 
-       class="bg-gold-main text-black px-12 py-4 text-lg font-bold rounded-xl hover:bg-gold-dark transition-all inline-block shadow-lg hover:shadow-xl">
-        Reserva ahora
+       class="inline-flex items-center gap-3 bg-gold-main text-black px-10 py-4 text-lg font-bold rounded-2xl hover:bg-gold-dark transition-all shadow-lg hover:shadow-xl">
+       <!--
+            inline-flex      → flex pero en línea (no ocupa todo el ancho)
+            items-center     → alinea ícono y texto verticalmente
+            gap-3            → espacio de 12px entre ícono y texto
+            bg-gold-main     → fondo dorado #D4AF37
+            text-black       → texto negro (contraste sobre dorado)
+            px-10            → padding horizontal generoso (40px)
+            py-4             → padding vertical (16px)
+            text-lg          → texto un poco más grande que el normal
+            font-bold        → texto en negrita
+            rounded-2xl      → bordes muy redondeados
+            hover:bg-gold-dark   → al pasar el ratón, dorado más oscuro
+            transition-all   → todas las animaciones suaves
+            shadow-lg        → sombra para dar profundidad
+            hover:shadow-xl  → sombra más grande al hacer hover
+        -->
+       
+        <!-- Ícono calendario -->
+       <img src="{% static 'img/Calendar.svg' %}" 
+                width="25" height="25" 
+                alt="Calendario boton"> <span>Reservar ahora</span><!-- <span> envuelve el texto para separarlo semánticamente del ícono -->
     </a>
 </section>
 
 <!-- Barberos Section -->
-<section class="py-20 px-8 bg-black-card">
+<section class="py-10 px-8 bg-black-card">
     <h2 class="text-4xl font-bold text-center mb-16">
         Nuestros 
         <span class="text-gold-main block">Maestros Barberos</span>

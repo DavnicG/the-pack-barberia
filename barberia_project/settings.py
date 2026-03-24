@@ -122,7 +122,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Agrega esto si no está:
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Le dice a Django que use nuestro modelo Usuario personalizado
 AUTH_USER_MODEL = 'usuarios.Usuario'
