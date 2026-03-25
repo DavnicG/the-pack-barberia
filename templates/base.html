@@ -27,7 +27,7 @@
             'gray-footer': '#999999',   /* Gris para textos secundarios del footer */
             'card': '#1a1a1a',          /* Negro tarjeta */
             'tarjeta-barbero': '#1f1f1f',
-            'secondary': '#2a2a2a',
+            'secondary': '#2a2a2a',     /* Fondo para el círculo placeholder */
             },
             fontFamily: {
             'barber': ['Inter', 'sans-serif'],
@@ -106,25 +106,5 @@
     <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
-
-    <!-- FOOTER -->
-    <footer class="bg-black-card border-t border-gray-800 px-8 py-10">
-        <div class="max-w-4xl mx-auto grid grid-cols-2 gap-8 mb-6">
-            <div>
-                <h3 class="text-gold-main text-lg font-semibold mb-4">Horarios de Atención</h3>
-                <p class="text-gray-footer">🕐 Lunes - Viernes: 9:00 AM - 8:00 PM</p>
-                <p class="text-gray-footer">🕐 Sábados: 8:00 AM - 6:00 PM</p>
-                <p class="text-gray-footer">🕐 Domingos: 10:00 AM - 4:00 PM</p>
-            </div>
-            <div>
-                <h3 class="text-gold-main text-lg font-semibold mb-4">Contáctanos</h3>
-                <p class="text-gray-footer">📱 +1 (555) 123-4567</p>
-                <p class="text-gray-footer">📧 info@thepack.com</p>
-            </div>
-        </div>
-        <div class="text-center text-gray-footer border-t border-gray-800 pt-6">
-            <p>✗ The Pack &nbsp;|&nbsp; © 2026 The Pack Barber Studio. Todos los derechos reservados.</p>
-        </div>
-    </footer>
 </body>
 </html>

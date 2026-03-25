@@ -241,5 +241,108 @@
     </div>
 </section>
 
+<!-- ===== FOOTER ===== -->
+<footer class="bg-black-main border-t border-gold-main/10 px-8 py-10">
+    <!--
+        bg-black-main      → fondo negro principal, contrasta con bg-card de barberos
+        border-t           → línea solo en la parte superior
+        border-gray-800    → línea dorada oscura separando el contenido del footer
+        px-8               → padding horizontal (32px)
+        py-10              → padding vertical (40px)
+    -->
 
+    <!-- Grid de 2 columnas: Horarios | Contacto -->
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+        <!--
+            max-w-4xl    → ancho máximo más estrecho que el de barberos (896px)
+                           el footer no necesita tanto ancho
+            mx-auto      → centra el contenedor
+            grid         → activa CSS Grid
+            grid-cols-1  → 1 columna en mobile (horarios y contacto)
+            grid-cols-2  → 2 columnas (horarios y contacto)
+            gap-8        → espacio de 32px entre columnas
+            mb-6         → margen inferior antes del separador del copyright
+        -->
+
+        <!-- ===== COLUMNA IZQUIERDA: Horarios ===== -->
+        <div>
+            <h3 class="text-gold-main text-lg font-semibold mb-4">Horarios de Atención</h3>
+            <!--
+                text-gold-main  → título en dorado para destacar
+                text-lg         → tamaño mediano-grande
+                font-semibold   → negrita media (600), más suave que bold
+                mb-4            → espacio entre título y los horarios
+            -->
+
+            <!-- Horario 1 -->
+            <div class="flex items-center gap-2 text-gray-footer mb-2">
+                <!--
+                    flex           → ícono y texto en fila horizontal
+                    items-center   → alineados verticalmente al centro
+                    gap-2          → espacio de 8px entre ícono y texto
+                    text-gray-footer → color gris #999999 para texto secundario
+                    mb-2           → espacio entre cada fila de horario
+                -->
+                <img src="{% static 'img/Clock.svg' %}" width="18" height="18"/>
+                <!-- Ícono reloj SVG, 18x18px, color dorado definido dentro del SVG -->
+                <span>Lunes - Viernes: 9:00 AM - 8:00 PM</span>
+            </div>
+
+            <!-- Horario 2 -->
+            <div class="flex items-center gap-2 text-gray-footer mb-2">
+                <img src="{% static 'img/Clock.svg' %}" width="18" height="18"/>
+                <span>Sábados: 8:00 AM - 6:00 PM</span>
+            </div>
+
+            <!-- Horario 3 -->
+            <div class="flex items-center gap-2 text-gray-footer mb-2">
+                <img src="{% static 'img/Clock.svg' %}" width="18" height="18"/>
+                <span>Domingos: 10:00 AM - 4:00 PM</span>
+            </div>
+        </div>
+
+        <!-- ===== COLUMNA DERECHA: Contacto ===== -->
+        <div>
+            <h3 class="text-gold-main text-lg font-semibold mb-4">Contáctanos</h3>
+
+            <!-- Teléfono -->
+            <div class="flex items-center gap-2 text-gray-footer mb-2">
+                <img src="{% static 'img/Phone.svg' %}" width="18" height="18"/>
+                <!-- Ícono teléfono SVG -->
+                <span>+1 (555) 123-4567</span>
+            </div>
+
+            <!-- Email -->
+            <div class="flex items-center gap-2 text-gray-footer mb-2">
+                <img src="{% static 'img/Mail.svg' %}" width="18" height="18"/>
+                <!-- Ícono correo SVG -->
+                <span>info@thepack.com</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== COPYRIGHT ===== -->
+    <div class="text-center text-gray-footer border-t border-gold-main/10 pt-10">
+        <!--
+            text-center        → todo centrado
+            text-gray-footer   → texto gris sutil
+            border-t           → línea separadora arriba
+            border-gold-main/10 → línea dorada al 10% de opacidad, muy sutil
+            pt-10              → espacio entre la línea y el contenido
+        -->
+
+        <!-- Logo + nombre centrados -->
+        <div class="flex items-center justify-center gap-2 mb-2">
+            <!--
+                justify-center → centra horizontalmente dentro del flex
+                mb-2           → espacio entre logo y texto de copyright
+            -->
+            <img src="{% static 'img/Scissors.svg' %}" width="16" height="16" alt="The Pack">
+            <!-- Tijeras pequeñas, mismas que el header pero más pequeñas (16px) -->
+            <span>The Pack</span>
+        </div>
+
+        <p>© 2026 The Pack Barber Studio. Todos los derechos reservados.</p>
+    </div>
+</footer>
 {% endblock %}
