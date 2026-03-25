@@ -12,7 +12,6 @@
 -->
 
 {% block title %}The Pack Barber Studio{% endblock %}
-
 <!-- 
     Reemplaza el block title de base.html.
     Esta página mostrará "The Pack Barber Studio" en la pestaña del navegador
@@ -102,31 +101,145 @@
     </a>
 </section>
 
-<!-- Barberos Section -->
-<section class="py-10 px-8 bg-black-card">
-    <h2 class="text-4xl font-bold text-center mb-16">
-        Nuestros 
-        <span class="text-gold-main block">Maestros Barberos</span>
+<!-- ===== SECCIÓN BARBEROS ===== -->
+<section class="py-10 px-8 bg-card">
+    <!--
+        py-10    → padding vertical (40px) arriba y abajo
+        px-8     → padding horizontal (32px) izquierda y derecha
+        bg-card  → fondo #1a1a1a, un poco más claro que el hero
+                   genera contraste visual entre secciones
+    -->
+
+    <!-- Título de sección -->
+    <h2 class="text-2xl md:text-3xl lg:text-4xl font-barber text-center mb-10">
+        Nuestros <span class="text-gold-main">Maestros Barberos</span>
     </h2>
-    
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!--
+        text-2xl          → tamaño base en móvil
+        md:text-3xl       → más grande en tablet
+        lg:text-4xl       → más grande en desktop (responsive)
+        font-barber       → fuente Inter definida en tailwind.config
+        text-center       → título centrado
+        mb-10             → margen inferior (40px) antes del grid
+        <span>            → solo "Maestros Barberos" es dorado,
+                            "Nuestros" hereda text-white del body
+    -->
+
+    <!-- Grid de tarjetas -->
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!--
+            max-w-6xl        → ancho máximo del contenedor (1152px)
+            mx-auto          → centra el contenedor horizontalmente
+            grid             → activa CSS Grid
+            grid-cols-1      → en móvil: 1 columna (tarjetas apiladas)
+            md:grid-cols-2   → en tablet: 2 columnas
+            lg:grid-cols-3   → en desktop: 3 columnas
+            gap-8            → espacio de 32px entre tarjetas
+        -->
+
+        <!-- Bucle Django: itera sobre cada barbero enviado desde la vista -->
         {% for barbero in barberos %}
-            <div class="bg-black-main border-2 border-gray-800 hover:border-gold-main rounded-3xl p-10 text-center hover:scale-105 transition-all group">
-                <!-- Foto placeholder -->
-                <div class="w-32 h-32 bg-gray-700 rounded-full mx-auto mb-6 border-4 border-gold-main group-hover:border-gold-dark transition-colors"></div>
-                
-                <h3 class="text-2xl font-bold mb-3 text-white">{{ barbero.nombre }}</h3>
-                <p class="text-gold-main text-lg mb-8 font-semibold">{{ barbero.especialidad }}</p>
-                
-                <a href="#" class="bg-gold-main text-black font-bold py-4 px-8 rounded-xl w-full block hover:bg-gold-dark transition-all">
+
+            <!-- Tarjeta individual de barbero -->
+            <div class="bg-tarjeta-barbero border-2 border-gold-dark/30 hover:border-gold-main rounded-3xl p-10 text-center hover:scale-105 transition-all group">
+                <!--
+                    bg-tarjeta-barbero      → fondo #1f1f1f (definido en tailwind.config)
+                    border-2                → borde de 2px
+                    border-gold-dark/30     → borde dorado oscuro al 30% de opacidad
+                    hover:border-gold-main  → al hacer hover, borde dorado brillante
+                    rounded-3xl             → bordes muy redondeados
+                    p-10                    → padding interno (40px) en todos los lados
+                    text-center             → todo el contenido centrado
+                    hover:scale-105         → la tarjeta crece un 5% al hacer hover
+                    transition-all          → todas las animaciones son suaves
+                    group                   → permite que hijos reaccionen al hover
+                                              del padre con "group-hover:"
+                -->
+
+                <!-- FOTO DEL BARBERO con fallback -->
+                {% if barbero.foto %}
+                    <!-- Si el barbero TIENE foto cargada en el admin -->
+                    <img src="{{ barbero.foto.url }}" 
+                         class="w-24 h-24 rounded-full mx-auto mb-6 border-4 border-gold-main/50 object-cover group-hover:border-gold-dark transition-colors"
+                         alt="Foto {{ barbero.nombre }}">
+                    <!--
+                        barbero.foto.url            → URL completa: /media/barberos/foto.jpg
+                        w-24 h-24                   → tamaño fijo 96x96px
+                        rounded-full                → imagen perfectamente circular
+                        mx-auto                     → centra la imagen
+                        mb-6                        → margen inferior antes del nombre
+                        border-4                    → borde dorado de 4px
+                        border-gold-main/50         → dorado al 50% de opacidad
+                        object-cover                → la foto llena el círculo sin deformarse
+                        group-hover:border-gold-dark → cuando el padre tiene hover,
+                                                       el borde se oscurece
+                        transition-colors           → cambio de color suave
+                    -->
+
+                {% else %}
+                    <!-- Si el barbero NO tiene foto: muestra círculo con inicial -->
+                    <div class="w-24 h-24 rounded-full mx-auto mb-6 border-4 border-gold-main/70 bg-secondary flex items-center justify-center">
+                        <!--
+                            bg-secondary     → fondo gris oscuro para el círculo
+                            flex             → activa flexbox para centrar la letra
+                            items-center     → centra verticalmente la letra
+                            justify-center   → centra horizontalmente la letra
+                        -->
+                        <span class="text-gold-main text-3xl font-bold">
+                            {{ barbero.nombre|first|upper }}
+                        </span>
+                        <!--
+                            barbero.nombre|first  → toma solo el primer carácter
+                            |upper                → lo convierte a mayúscula
+                            Ejemplo: "carlos" → "C"
+                        -->
+                    </div>
+                {% endif %}
+
+                <!-- Nombre del barbero -->
+                <h3 class="text-2xl font-barber mb-3 text-white">
+                    {{ barbero.nombre }}
+                </h3>
+                <!-- {{ barbero.nombre }} → variable Django, viene de la BD -->
+
+                <!-- Especialidad del barbero -->
+                <p class="text-gold-main text-lg mb-8 font-barber">
+                    {{ barbero.especialidad|default:"Barbero Profesional" }}
+                </p>
+                <!--
+                    |default:"Barbero Profesional" → filtro Django:
+                    si especialidad está vacía, muestra el texto por defecto
+                -->
+
+                <!-- Botón de reserva -->
+                <a href="#" class="bg-gold-main text-black font-barber py-3 px-8 rounded-xl w-full block hover:bg-gold-dark transition-all">
                     Reservar
                 </a>
+                <!--
+                    href="#"         → pendiente: aquí irá la URL de reserva
+                    w-full           → el botón ocupa todo el ancho de la tarjeta
+                    block            → necesario para que w-full funcione en un <a>
+                    py-2 px-8        → padding vertical pequeño, horizontal generoso
+                    rounded-xl       → bordes redondeados medianos
+                    hover:bg-gold-dark → dorado más oscuro al hacer hover
+                -->
             </div>
+
+        <!-- Si no hay barberos en la BD, muestra este mensaje -->
         {% empty %}
             <div class="col-span-full text-center py-20">
+                <!--
+                    col-span-full → ocupa las 3 columnas del grid completo
+                    py-20         → bastante espacio vertical para el mensaje
+                -->
                 <p class="text-gray-400 text-xl">No hay barberos disponibles.</p>
             </div>
+
         {% endfor %}
+        <!-- Cierra el bucle for de Django -->
+
     </div>
 </section>
+
+
 {% endblock %}

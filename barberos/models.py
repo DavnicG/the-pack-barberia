@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Barbero(models.Model):  # Singular
+class Barbero(models.Model):
 
     nombre = models.CharField(max_length=100)  # Requerido por defecto
 
@@ -15,6 +15,13 @@ class Barbero(models.Model):  # Singular
         max_length=300,
         blank=True,
         null=True
+    )
+
+    # Campo para la foto
+    foto = models.ImageField(
+        upload_to= 'barberos/', # se guarda en media/barberos/
+        blank= True,
+        null= True
     )
 
     def __str__(self):

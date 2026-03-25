@@ -131,3 +131,7 @@ STATICFILES_DIRS = [
 
 # Le dice a Django que use nuestro modelo Usuario personalizado
 AUTH_USER_MODEL = 'usuarios.Usuario'
+
+# Media:
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
