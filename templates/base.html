@@ -75,22 +75,34 @@
                 width/height       → tamaño de la imagen en píxeles
                 alt                → texto alternativo (accesibilidad y SEO)
                 -->
-            <h1 class="text-2xl">The Pack</h1>
+            <a href="{% url 'index' %}" class="text-2xl">The Pack</a>
             <!-- text-2xl → tamaño de fuente grande (1.5rem = 24px) -->
         </div>
 
         <!-- Navegación -->
+
         <nav class="flex items-center gap-8">
-             <!-- 
+            <!-- 
                 flex         → links en fila horizontal
                 items-center → alineados verticalmente
                 gap-8        → espacio de 32px entre links
             -->
-            <a href="#" class="hover:text-gold-main transition-colors">
-                Iniciar Sesión
-            </a>
+            {% if user.is_authenticated %}
+                <p class="text-gold-main">
+                    Bienvenido {{ user.username }}
+                </p>
+                <a href={% url 'logout' %} class="hover:text-gold-main transition-colors">
+                    Cerrar Sesión
+                </a>
+            {% else %}
+                <a href={% url 'login' %} class="hover:text-gold-main transition-colors">
+                    Iniciar Sesión
+                </a>
+                <a href={% url 'registro' %} class="hover:text-gold-main transition-colors">
+                    Registrate
+                </a>
+            {% endif %}
             <!-- 
-                href="#"              → por ahora no va a ningún lado (pendiente login)
                 hover:text-gold-main  → al pasar el ratón, texto se vuelve dorado
                 transition-colors     → el cambio de color es suave (animado)
             -->
@@ -98,8 +110,9 @@
                 Mis Citas
             </a>
             <!-- {% url 'lista_servicios' %} → Django genera la URL correcta
-                 buscando la vista con ese nombre en urls.py -->
+                buscando la vista con ese nombre en urls.py -->
         </nav>
+        
     </header>
 
     <!-- CONTENIDO PRINCIPAL -->

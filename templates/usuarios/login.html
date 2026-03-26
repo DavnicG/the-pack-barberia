@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static%}
+
+{%block title%} Login - The Pack {%endblock%}
+
+{%block content%}
+
+<section class="min-h-screen flex items-center justify-center bg-gradient-to-b from-black-main to-card py-20 px-4">
+    <!--
+        min-h-screen   → la sección ocupa al menos toda la pantalla
+        flex           → activa flexbox para centrar la tarjeta
+        items-center   → centra verticalmente
+        justify-center → centra horizontalmente
+    -->
+    
+    <!-- Tarjeta del formulario -->
+    <div class="bg-tarjeta-barbero border border-gold-main/20 rounded-3xl p-10 w-full max-w-md">
+        <!--
+            max-w-md  → ancho máximo 448px, formulario no muy ancho
+            w-full    → en móvil ocupa todo el ancho disponible
+        -->
+        
+        <!-- Logo -->
+         <div class="text-center mb-8">
+            <img src="{% static 'img/Logos/the-pack-dorado.svg' %}" 
+                 width="220" height="200" 
+                 class="mx-auto mb-4"
+                 alt="The Pack Logo">
+            <h1 class="text-2xl font-barber text-white">Bienvenido de vuelta</h1>
+            <p class="text-gray-footer mt-1">Inicia sesión en tu cuenta</p>
+        </div>
+
+        <!-- Mensajes de error -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="bg-red-900/80 border border-red-500 text-red-300 px-4 py-3 rounded-xl mb-6">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <!--
+            messages  → sistema de Django para mensajes temporales
+            bg-red-900/80 → fondo rojo oscuro al 80% de opacidad
+        -->
+        
+        <!-- Formulario -->
+        <form method="POST">
+            <!--
+                method="POST" → envía los datos de forma segura
+                               no aparecen en la URL
+            -->
+
+            {% csrf_token %}
+            <!--
+                csrf_token → protección de seguridad obligatoria en Django
+                             evita que otras páginas envíen formularios
+                             en nombre del usuario sin su permiso
+            -->
+
+            <!-- Campo usuario -->
+            <div class="mb-5">
+                <label class="block text-gray-footer text-sm mb-2">Usuario</label>
+                <input type="text" 
+                       name="username"
+                       placeholder="Tu nombre de usuario"
+                       class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main rounded-xl px-4 py-3 text-white outline-none transition-colors">
+                <!--
+                    name="username" → debe coincidir con request.POST['username'] en views.py
+                    focus:border-gold-main → borde dorado al hacer click en el campo
+                    outline-none → elimina el borde azul por defecto del navegador
+                -->
+            </div>
+
+            <!-- Campo contraseña -->
+            <div class="mb-6">
+                <label class="block text-gray-footer text-sm mb-2">Contraseña</label>
+                <input type="password" 
+                       name="password"
+                       placeholder="Tu contraseña"
+                       class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main rounded-xl px-4 py-3 text-white outline-none transition-colors">
+                <!--
+                    type="password" → oculta los caracteres mientras se escribe
+                    name="password" → debe coincidir con request.POST['password'] en views.py
+                -->
+            </div>
+
+            <!-- Botón submit -->
+            <button type="submit" 
+                    class="w-full bg-gold-main text-black font-bold py-3 rounded-xl hover:bg-gold-dark transition-all">
+                Iniciar Sesión
+            </button>
+            <!--
+                type="submit" → al hacer click envía el formulario con method POST
+            -->
+        <form/>
+    
+    <!-- Link a registro -->
+        <p class="text-center text-gray-footer mt-6">
+            ¿No tienes cuenta? 
+            <a href="{% url 'registro' %}" class="text-gold-main hover:text-gold-dark transition-colors">
+                Regístrate aquí
+            </a>
+        </p>
+        <!--
+            {% url 'registro' %} → genera la URL /registro/ usando el name
+                                   definido en urls.py
+        -->
+
+
+
+
+
+
+    
+    <div/>
+    
+<section/>
+
+{%endblock%}

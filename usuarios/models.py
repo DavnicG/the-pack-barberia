@@ -8,7 +8,8 @@ class Usuario(AbstractUser):
     # Definimos las opciones válidas para el campo rol
     ROLES = [
         ('admin', 'Administrador'),  #('valor en BD', 'Texto visible')
-        ('barbero', 'Barbero')
+        ('barbero', 'Barbero'),
+        ('cliente', 'Cliente')
     ]
 
     # Campo rol: texto corto, usa las opciones de arriba, por defecto 'barbero'
