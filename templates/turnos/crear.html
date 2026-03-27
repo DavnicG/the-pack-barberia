@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Agendar Cita{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="bg-card border border-gold-main/30 rounded-2xl p-8 w-full max-w-md">
+
+        <h1 class="text-3xl font-bold text-center mb-2">
+            Agendar <span class="text-gold-main">Cita</span>
+        </h1>
+        <p class="text-center text-gray-400 mb-8">Completa los datos para tu reserva</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit"
+                class="w-full bg-gold-main text-black font-bold py-3 rounded-lg mt-4 hover:bg-gold-dark transition-colors">
+                Confirmar Reserva
+            </button>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
