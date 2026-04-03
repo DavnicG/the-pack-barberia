@@ -75,7 +75,7 @@
     -->
     
     <!-- Botón de reserva -->
-    <a href="{% url 'lista_servicios' %}" 
+    <a href="{% url 'crear_turno_general' %}" 
        class="inline-flex items-center gap-3 bg-gold-main text-black px-10 py-4 text-lg font-bold rounded-2xl hover:bg-gold-dark transition-all shadow-lg hover:shadow-xl">
        <!--
             inline-flex      → flex pero en línea (no ocupa todo el ancho)
@@ -212,7 +212,7 @@
                 -->
 
                 <!-- Botón de reserva -->
-                <a href="#" class="bg-gold-main text-black font-barber py-3 px-8 rounded-xl w-full block hover:bg-gold-dark transition-all">
+                <a href="{% url 'crear_turno' barbero.id %}" class="bg-gold-main text-black font-barber py-3 px-8 rounded-xl w-full block hover:bg-gold-dark transition-all">
                     Reservar
                 </a>
                 <!--

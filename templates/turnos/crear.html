@@ -1,25 +1,387 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Agendar Cita{% endblock %}
+{% block title %}Reservar Cita - The Pack{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="bg-card border border-gold-main/30 rounded-2xl p-8 w-full max-w-md">
 
-        <h1 class="text-3xl font-bold text-center mb-2">
-            Agendar <span class="text-gold-main">Cita</span>
-        </h1>
-        <p class="text-center text-gray-400 mb-8">Completa los datos para tu reserva</p>
 
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit"
-                class="w-full bg-gold-main text-black font-bold py-3 rounded-lg mt-4 hover:bg-gold-dark transition-colors">
+<style>
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 4px;
+  }
+  input[type="date"] {
+    color-scheme: dark;
+  }
+</style>
+
+
+
+    <section class="min-h-screen bg-gradient-to-b from-black-main to-card py-16 px-4">
+        <div class="max-w-4xl mx-auto">
+
+            <!-- Título -->
+            <div class="text-center mb-10">
+            <h1 class="text-3xl font-barber text-white mb-2">Reservar Cita</h1>
+            <p class="text-gray-footer">Completa los pasos para agendar tu turno en The Pack</p>
+            </div>
+
+            <!-- Mensajes de error -->
+            {% if messages %}
+            {% for message in messages %}
+                <div class="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-xl mb-6 text-center">
+                {{ message }}
+                </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST" id="form-turno">
+
+                {% csrf_token %}
+                  <!-- 
+                        method="POST" → los datos viajan seguros, no en la URL
+                        csrf_token → protección obligatoria de Django contra ataques.
+                        Sin esto, Django rechaza el formulario con error 403
+                    -->
+                
+                <!-- PASO 1: BARBERO -->
+
+                <div class="mb-8">
+
+                    <h2 class="text-xl font-barber text-white mb-1">
+                        <span class="text-gold-main">1.</span> Elige tu Barbero
+                    </h2>
+                    <p class="text-gray-footer text-sm mb-5">Selecciona con quién quieres tu cita</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {% for barbero in barberos %}
+
+                        <label class="barbero-card cursor-pointer rounded-2xl border-2 p-5 text-center transition-all duration-200
+                        
+                            {% if barbero_id == barbero.id%}
+                                border-gold-main bg-gold-main/10
+                            {%else%}
+                                border-gold-main/20 bg-tarjeta-barbero hover:border-gold-main/60
+                            {% endif %}"
+                            
+                            for = "barbero -{{barbero.id}}">
+
+                            <!-- Foto o inicial -->
+
+                            <div class="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden bg-secondary flex items-center justify-center">
+                                {% if barbero.foto %}
+                                    <img src="{{ barbero.foto.url }}" alt="{{ barbero.nombre }}"
+                                        class="w-full h-full object-cover">
+                                {% else %}
+                                    {# Sin foto → mostramos la primera letra del nombre #}
+                                    <span class="text-gold-main text-2xl font-barber">
+                                    {{ barbero.nombre|first|upper }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="text-white font-medium mb-1">{{ barbero.nombre }}</h3>
+                            <p class="text-gray-footer text-sm">{{ barbero.especialidad }}</p>
+
+                            <!--
+                            Input radio OCULTO — es el que realmente envía el dato.
+                            La tarjeta (label) es solo visual; al hacer click en ella
+                            activa este input automáticamente porque el label apunta
+                            a él con el atributo "for"
+                            -->
+                            
+                            <input
+                            type="radio"
+                            id="barbero-{{ barbero.id }}"
+                            name="barbero"
+                            value="{{ barbero.id }}"
+                            class="hidden"
+                            {% if barbero_id == barbero.id %}checked{% endif %}
+                            required
+                            >
+
+
+                        </label>
+
+                        {% empty %}
+                            <p class="text-gray-footer col-span-3 text-center py-8">
+                                No hay barberos disponibles.
+                            </p>
+                        {% endfor %}
+
+                    </div>
+                </div>
+
+
+                <!-- PASO 2: SERVICIO -->
+                <div class="mb-8">
+                <h2 class="text-xl font-barber text-white mb-1">
+                    <span class="text-gold-main">02.</span> Selecciona el Servicio
+                </h2>
+                <p class="text-gray-footer text-sm mb-5">¿Qué te vamos a hacer hoy?</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {% for servicio in servicios %}
+
+                    <label
+                        class="servicio-card cursor-pointer rounded-2xl border-2 border-gold-main/20
+                            bg-tarjeta-barbero hover:border-gold-main/60 p-5 transition-all duration-200"
+                        for="servicio-{{ servicio.id }}"
+                    >
+                        <h3 class="text-white font-medium mb-1">{{ servicio.nombre }}</h3>
+                        <p class="text-gray-footer text-sm mb-3">{{ servicio.duracion_min }} min</p>
+                        <p class="text-gold-main font-barber text-lg">${{ servicio.precio }}</p>
+
+                        <input
+                        type="radio"
+                        id="servicio-{{ servicio.id }}"
+                        name="servicio"
+                        value="{{ servicio.id }}"
+                        class="hidden"
+                        required
+                        >
+                    </label>
+
+                    {% empty %}
+                    <p class="text-gray-footer col-span-3 text-center py-8">
+                        No hay servicios disponibles.
+                    </p>
+                    {% endfor %}
+                </div>
+                </div>
+
+
+                <!-- PASO 3: FECHA Y HORA -->
+                <div class="mb-8">
+                <h2 class="text-xl font-barber text-white mb-1">
+                    <span class="text-gold-main">03.</span> Fecha y Hora
+                </h2>
+                <p class="text-gray-footer text-sm mb-5">¿Cuándo quieres tu cita?</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+                    <!-- Selector de fecha -->
+                    <div class="bg-tarjeta-barbero border border-gold-main/20 rounded-2xl p-6">
+                    <label class="block text-gray-footer text-sm mb-3">Fecha</label>
+                    <!--
+                        type="date" → el navegador muestra un calendario nativo.
+                        name="fecha" → la vista lo recibe con form.cleaned_data['fecha']
+                        id="input-fecha" → el JS lo usará para poner la fecha mínima (hoy)
+                    -->
+                    <input
+                        type="date"
+                        name="fecha"
+                        id="input-fecha"
+                        class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main
+                            rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                        required
+                    >
+                    </div>
+
+                    <!-- Selector de hora -->
+                    <div class="bg-tarjeta-barbero border border-gold-main/20 rounded-2xl p-6">
+                    <label class="block text-gray-footer text-sm mb-3">Hora</label>
+
+                    <!--
+                        Grilla de botones de hora.
+                        Cada botón al hacer click guarda su valor en el input oculto #input-hora.
+                        El JS los genera automáticamente si la vista no los envía.
+                    -->
+                    <div class="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1" id="grilla-horas"></div>
+
+                    <!-- Input oculto — guarda la hora para enviarla con el formulario -->
+                    <input type="hidden" name="hora" id="input-hora" required>
+                    <p class="text-gray-footer text-xs mt-3" id="hora-seleccionada">
+                        Ninguna hora seleccionada
+                    </p>
+                    </div>
+
+                </div>
+                </div>
+
+                <!-- PASO 4: MÉTODO DE PAGO -->
+            <div class="mb-8">
+            <h2 class="text-xl font-barber text-white mb-1">
+                <span class="text-gold-main">04.</span> Método de Pago
+            </h2>
+            <p class="text-gray-footer text-sm mb-5">¿Cómo vas a pagar?</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                <label class="pago-card cursor-pointer rounded-2xl border-2 border-gold-main/20
+                            bg-tarjeta-barbero hover:border-gold-main/60 p-6 text-center transition-all duration-200"
+                    for="pago-efectivo">
+                <div class="text-3xl mb-3">💵</div>
+                <p class="text-white font-medium">Efectivo</p>
+                <input type="radio" id="pago-efectivo" name="metodo_pago" value="efectivo" class="hidden" required>
+                </label>
+
+                <label class="pago-card cursor-pointer rounded-2xl border-2 border-gold-main/20
+                            bg-tarjeta-barbero hover:border-gold-main/60 p-6 text-center transition-all duration-200"
+                    for="pago-tarjeta">
+                <div class="text-3xl mb-3">💳</div>
+                <p class="text-white font-medium">Tarjeta</p>
+                <input type="radio" id="pago-tarjeta" name="metodo_pago" value="tarjeta" class="hidden" required>
+                </label>
+
+                <label class="pago-card cursor-pointer rounded-2xl border-2 border-gold-main/20
+                            bg-tarjeta-barbero hover:border-gold-main/60 p-6 text-center transition-all duration-200"
+                    for="pago-transferencia">
+                <div class="text-3xl mb-3">📲</div>
+                <p class="text-white font-medium">Transferencia</p>
+                <input type="radio" id="pago-transferencia" name="metodo_pago" value="transferencia" class="hidden" required>
+                </label>
+
+            </div>
+            </div>
+
+
+            <!-- PASO 5: DATOS DEL CLIENTE -->
+                {% if not user.is_authenticated %}
+                {# Este bloque SOLO aparece si el usuario NO está logueado #}
+                <div class="mb-8">
+                    <h2 class="text-xl font-barber text-white mb-1">
+                    <span class="text-gold-main">05.</span> Tus Datos
+                    </h2>
+                    <p class="text-gray-footer text-sm mb-5">
+                    Necesitamos estos datos para tu reserva. 
+                    <a href="{% url 'login' %}" class="text-gold-main hover:underline">
+                        ¿Tienes cuenta? Inicia sesión
+                    </a>
+                    </p>
+
+                    <div class="bg-tarjeta-barbero border border-gold-main/20 rounded-2xl p-6
+                                grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+                    <div>
+                        <label class="block text-gray-footer text-sm mb-2">Nombre completo</label>
+                        <input type="text" name="nombre" placeholder="Tu nombre"
+                            class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main
+                                    rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-footer text-sm mb-2">Teléfono</label>
+                        <input type="tel" name="telefono" placeholder="Tu número"
+                            class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main
+                                    rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-footer text-sm mb-2">Correo electrónico</label>
+                        <input type="email" name="email" placeholder="tu@correo.com"
+                            class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main
+                                    rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                            required>
+                    </div>
+
+                    </div>
+                </div>
+
+                {% else %}
+                {# Usuario logueado → mostramos un aviso con su nombre #}
+                <div class="mb-8 bg-gold-main/10 border border-gold-main/30 rounded-2xl p-5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gold-main/20 flex items-center justify-center
+                                text-gold-main font-barber text-lg">
+                    {{ user.username|first|upper }}
+                    </div>
+                    <div>
+                    <p class="text-white font-medium">
+                        Reservando como <span class="text-gold-main">{{ user.username }}</span>
+                    </p>
+                    <p class="text-gray-footer text-sm">Tus datos están guardados en tu cuenta.</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- BOTÓN DE CONFIRMAR -->
+                <button type="submit"
+                        class="w-full bg-gold-main hover:bg-gold-dark text-black font-barber font-semibold
+                            text-lg py-4 rounded-2xl transition-colors duration-200 mt-2">
                 Confirmar Reserva
-            </button>
-        </form>
+                </button>
 
-    </div>
-</div>
+            </form>
+
+        </div>
+    </section>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ── 1. FECHA MÍNIMA ─────────────────────────────────────
+  // Evitamos que el usuario pueda elegir fechas pasadas
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('input-fecha').setAttribute('min', hoy);
+
+
+  // ── 2. TARJETAS SELECCIONABLES (barbero, servicio, pago) ─
+  // Función reutilizable: al hacer click en una tarjeta,
+  // le pone borde dorado y quita el de las demás del grupo
+  function activarTarjeta(selector) {
+    document.querySelectorAll(selector).forEach(function(card) {
+      card.addEventListener('click', function () {
+        // Quitar estilo activo de todas las del grupo
+        document.querySelectorAll(selector).forEach(function(c) {
+          c.classList.remove('border-gold-main', 'bg-gold-main/10');
+          c.classList.add('border-gold-main/20');
+        });
+        // Poner estilo activo en la clickeada
+        this.classList.add('border-gold-main', 'bg-gold-main/10');
+        this.classList.remove('border-gold-main/20');
+      });
+    });
+  }
+
+  activarTarjeta('.barbero-card');
+  activarTarjeta('.servicio-card');
+  activarTarjeta('.pago-card');
+
+
+  // ── 3. GENERAR BOTONES DE HORA ───────────────────────────
+  const grillaHoras = document.getElementById('grilla-horas');
+  const horaInput   = document.getElementById('input-hora');
+  const horaTexto   = document.getElementById('hora-seleccionada');
+
+  const horas = [
+    '09:00','09:30','10:00','10:30','11:00','11:30',
+    '14:00','14:30','15:00','15:30','16:00','16:30',
+    '17:00','17:30','18:00','18:30'
+  ];
+
+  // Creamos un botón por cada hora y lo agregamos a la grilla
+  horas.forEach(function(h) {
+    const btn = document.createElement('button');
+    btn.type      = 'button'; // evita que envíe el form al hacer click
+    btn.className = 'hora-btn border border-gold-main/20 text-gray-footer rounded-lg py-2 text-sm hover:border-gold-main hover:text-gold-main transition-all duration-150';
+    btn.dataset.hora = h;
+    btn.textContent  = h;
+    grillaHoras.appendChild(btn);
+  });
+
+  // Al hacer click en un botón de hora:
+  // activa su estilo y guarda la hora en el input oculto
+  document.querySelectorAll('.hora-btn').forEach(function(btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.hora-btn').forEach(function(b) {
+        b.classList.remove('bg-gold-main', 'text-black', 'border-gold-main');
+        b.classList.add('border-gold-main/20', 'text-gray-footer');
+      });
+      this.classList.add('bg-gold-main', 'text-black', 'border-gold-main');
+      this.classList.remove('border-gold-main/20', 'text-gray-footer');
+      horaInput.value   = this.dataset.hora;
+      horaTexto.textContent = 'Hora seleccionada: ' + this.dataset.hora;
+    });
+  });
+
+});
+</script>
+
 {% endblock %}

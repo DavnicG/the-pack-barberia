@@ -9,4 +9,4 @@ class TurnoForm (forms.ModelForm):
     class Meta:
 
         model = Turno
-        fields = ['barbero', 'servicio', 'fecha', 'hora']
+        fields = ['barbero', 'servicio', 'fecha', 'hora','metodo_pago']

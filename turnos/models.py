@@ -12,6 +12,12 @@ class Turno (models.Model):
         ('confirmado', 'Confirmado'),
         ('completado', 'Completado'),
         ('cancelado', 'Cancelado')]
+    
+    METODOS_PAGO = [
+        ('efectivo','EFECTIVO'),
+        ('tarjeta','TARJETA'),
+        ('transferencia','TRANSFERENCIA')
+    ]
 
     fecha = models.DateField()
 
@@ -38,6 +44,12 @@ class Turno (models.Model):
     servicio = models.ForeignKey(
         Servicio,                    #Modelo al que apunta la llave foranea
         on_delete=models.RESTRICT   #No permite borrar si tiene turnos asociados
+    )
+
+    metodo_pago = models.CharField(
+        max_length=15,
+        choices=METODOS_PAGO,
+        default='efectivo'
     )
 
     def __str__(self):
