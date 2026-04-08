@@ -36,12 +36,14 @@ def crear_turno(request, barbero_id=None):
             # ── Determinar el cliente ──────────────────────────────
             if request.user.is_authenticated:
 
-                # Usuario logueado: buscamos su Cliente por email
+                # Buscamos por la relación directa usuario→cliente
                 # Si no existe, lo creamos con su username
                 cliente, _ = Cliente.objects.get_or_create(
-
-                    email= request.user.email,
-                    defaults= {'nombre': request.user.username}
+                    usuario=request.user,
+                    defaults= {
+                        'nombre': request.user.username,
+                        'email': request.user.email
+                        }
                 )
             else:
 
@@ -116,7 +118,7 @@ def mis_citas(request):
 
         # Usuario logueado: buscamos por su email automáticamente
         try:
-            cliente = Cliente.objects.get(email=request.user.email)
+            cliente = request.user.cliente
             # Traemos sus turnos ordenados del más reciente al más antiguo
             turnos = Turno.objects.filter(
                 cliente=cliente

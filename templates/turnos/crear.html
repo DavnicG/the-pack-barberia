@@ -310,7 +310,12 @@
                         <!-- Campo: Teléfono -->
                         <div>
                             <label class="block text-gray-footer text-sm mb-2">Teléfono</label>
-                            <input type="tel" name="telefono" placeholder="Tu número"
+                            <input 
+                                type="tel" 
+                                name="telefono" 
+                                placeholder="Ej:3001234567"
+                                pattern="^\+?[\d\s\-]{7,15}$"
+                                title="Solo números, espacios, + y guiones. Entre 7 y 15 caracteres."
                                 class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main
                                        rounded-xl px-4 py-3 text-white outline-none transition-colors"
                                 required>
