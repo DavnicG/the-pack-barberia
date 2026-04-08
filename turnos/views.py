@@ -1,32 +1,55 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 
 from barberos.models import Barbero
 from servicios.models import Servicio
 from clientes.models import Cliente
+from .models import Turno
+from .forms import TurnoForm 
+
+
 
 from .forms import TurnoForm
 
 def crear_turno(request, barbero_id=None):
+    """
+    Vista principal para crear un turno.
+    Funciona para dos rutas:
+      - /turnos/crear/         → sin barbero preseleccionado
+      - /turnos/crear/<id>/    → con barbero preseleccionado
+    """
 
-# Traemos todos los barberos y servicios de la BD
+# Traemos todos los barberos y servicios de la BD para mostrar en el formulario
     barberos = Barbero.objects.all()
     servicios = Servicio.objects.all()
 
-# Si el usuario envió el formulario (botón Reservar)
+    # ─────────────────────────────────────────────────────────────
+    # CASO 1: El usuario envió el formulario (botón Confirmar Reserva)
+    # ─────────────────────────────────────────────────────────────
     if request.method == 'POST':
+
         form = TurnoForm(request.POST)
+        
         if form.is_valid():
+
+            # commit=False → crea el objeto Turno pero NO lo guarda aún en la BD
+            # Necesitamos asignarle el cliente antes de guardar
             turno = form.save(commit=False)
-            # commit=False → no guarda aún en la BD, nos da el objeto para modificarlo
+            
+            # ── Determinar el cliente ──────────────────────────────
             if request.user.is_authenticated:
-                # Si está logueado, buscamos o creamos su Cliente
+
+                # Usuario logueado: buscamos su Cliente por email
+                # Si no existe, lo creamos con su username
                 cliente, _ = Cliente.objects.get_or_create(
 
                     email= request.user.email,
                     defaults= {'nombre': request.user.username}
                 )
             else:
-                # Si es invitado, tomamos los datos del formulario
+
+                # Usuario invitado: tomamos los datos del formulario
+                # get_or_create evita duplicados si el email ya existe
                 cliente, _ = Cliente.objects.get_or_create(
                     email=request.POST.get('email'),
                     defaults={
@@ -34,12 +57,40 @@ def crear_turno(request, barbero_id=None):
                         'telefono': request.POST.get('telefono'),
                     }
                 )
-            turno.cliente = cliente
-            turno.save()
-            return redirect('lista_barberos')
 
+            # ── Verificar que el horario no esté ocupado ───────────
+            # Buscamos si ya existe un turno con el mismo barbero, fecha y hora
+            turno_existente = Turno.objects.filter(
+
+                barbero = turno.barbero,
+                fecha = turno.fecha,
+                hora = turno.hora,
+                estado__in=['pendiente', 'confirmado'] # Solo bloqueamos activos
+            ).exists()
+
+            if turno_existente:
+                # Si ya está ocupado, mostramos un aviso y no guardamos
+                messages.error(
+                request,
+                'Ese horario ya está reservado. Por favor elige otra hora.'
+                )
+            else:
+                # Todo está bien → asignamos cliente y guardamos
+                turno.cliente = cliente
+                turno.save()    
+
+                # Redirigimos a la pagina de 'Mis citas'
+                messages.success(request, '¡Tu cita fue reservada con éxito!')
+                return redirect('mis_citas')
+            
+        # Si el formulario tiene errores, caemos aquí
+        # Django renderiza de nuevo la página con los errores
+
+    # ─────────────────────────────────────────────────────────────
+    # CASO 2: El usuario abrió la página por primera vez (GET)
+    # ─────────────────────────────────────────────────────────────
     else:
-        # Si viene con barbero_id, lo preseleccionamos
+        # Si viene con barbero_id, lo ponemos como valor inicial del form
         initial = {}
         if barbero_id:
 
@@ -47,9 +98,35 @@ def crear_turno(request, barbero_id=None):
         
         form = TurnoForm(initial=initial)
     
+    # Enviamos todo al template
     return render (request, 'turnos/crear.html', {
         'form': form,
         'barberos': barberos,
         'servicios': servicios,
         'barbero_id': barbero_id,
         })
+
+def mis_citas(request):
+    """
+    Muestra los turnos del cliente logueado.
+    Si no está autenticado, lo redirige al login.
+    """
+
+    # Si no inició sesión, no tiene citas que mostrar
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    # Buscamos el Cliente asociado al usuario logueado
+    try:
+        cliente = Cliente.objects.get(email=request.user.email)
+        # Traemos sus turnos ordenados del más reciente al más antiguo
+        turnos = Turno.objects.filter(
+            cliente=cliente
+        ).order_by('-fecha', '-hora')
+    except Cliente.DoesNotExist:
+        # Si aún no tiene perfil de cliente, lista vacía
+        turnos = []
+
+    return render(request, 'turnos/mis_citas.html', {
+        'turnos': turnos,
+    })
