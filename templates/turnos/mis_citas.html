@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mis Citas - The Pack{% endblock %}
+
+{% block content %}
+
+<section class="min-h-screen bg-gradient-to-b from-black-main to-card py-16 px-4">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- ENCABEZADO -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-barber text-gold-dark mb-2">Mis Citas</h1>
+            <p class="text-gray-footer">
+                Aquí puedes ver todas tus reservas en The Pack
+            </p>
+        </div>
+
+        <!-- MENSAJES (éxito al crear turno, errores, etc.) -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 rounded-xl px-4 py-3 text-center
+                    {% if message.tags == 'success' %}
+                        bg-green-900/30 border border-green-500/30 text-green-400
+                    {% else %}
+                        bg-red-900/30 border border-red-500/30 text-red-400
+                    {% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- BOTÓN PARA HACER NUEVA RESERVA -->
+        <div class="flex justify-end mb-6">
+            <a
+                href="{% url 'crear_turno_general' %}"
+                class="bg-gold-main hover:bg-gold-dark text-black font-barber font-semibold
+                       px-6 py-3 rounded-xl transition-colors duration-200"
+            >
+                + Nueva Reserva
+            </a>
+        </div>
+
+        <!-- BÚSQUEDA PARA USUARIOS INVITADOS
+        Solo se muestra si el usuario NO está logueado -->
+        {% if not user.is_authenticated %}
+            <div class="bg-tarjeta-barbero border border-gold-main/20 rounded-2xl p-6 mb-8">
+                <h2 class="text-white font-barber text-lg mb-1">
+                    ¿No tienes cuenta?
+                </h2>
+                <p class="text-gray-footer text-sm mb-4">
+                    Ingresa el correo con el que hiciste tu reserva.
+                </p>
+
+                <form method="POST" class="flex gap-3">
+                    {% csrf_token %}
+                    <input
+                        type="email"
+                        name="email_busqueda"
+                        placeholder="tu@correo.com"
+                        value="{{ email_buscado|default:'' }}"
+                        class="flex-1 bg-black-main border border-gold-main/20 focus:border-gold-main
+                            rounded-xl px-4 py-3 text-white outline-none transition-colors"
+                        required
+                    >
+                    <button
+                        type="submit"
+                        class="bg-gold-main hover:bg-gold-dark text-black font-barber font-semibold
+                            px-6 py-3 rounded-xl transition-colors duration-200"
+                    >
+                        Buscar
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        <!-- LISTA DE TURNOS -->
+        {% if turnos %}
+
+            <div class="flex flex-col gap-4">
+                {% for turno in turnos %}
+
+                    <!-- TARJETA DE TURNO
+                         Muestra la info de cada reserva del cliente -->
+                    <div class="bg-tarjeta-barbero border border-gold-main/20 rounded-2xl p-6
+                                flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                        <!-- INFO IZQUIERDA: barbero, servicio, fecha y hora -->
+                        <div class="flex items-center gap-4">
+
+                        <!-- Foto o inicial del barbero (igual que en la landing y el formulario) -->
+                        <div class="w-12 h-12 rounded-full bg-gold-main/20 border border-gold-main/30
+                                    overflow-hidden flex items-center justify-center shrink-0">
+                            {% if turno.barbero.foto %}
+                                <!--
+                                    turno.barbero.foto.url → genera la URL completa de la imagen
+                                    object-cover → recorta la foto para que llene el círculo sin deformarse
+                                -->
+                                <img
+                                    src="{{ turno.barbero.foto.url }}"
+                                    alt="{{ turno.barbero.nombre }}"
+                                    class="w-full h-full object-cover"
+                                >
+                            {% else %}
+                                <!-- Si no tiene foto, mostramos la primera letra del nombre -->
+                                <span class="text-gold-main font-barber text-xl">
+                                    {{ turno.barbero.nombre|first|upper }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                            <div>
+                                <!-- Nombre del barbero y servicio -->
+                                <p class="text-white font-medium">
+                                    {{ turno.barbero.nombre }}
+                                    <span class="text-gray-footer font-normal text-sm">
+                                        — {{ turno.servicio.nombre }}
+                                    </span>
+                                </p>
+
+                                <!-- Fecha y hora -->
+                                <p class="text-gray-footer text-sm mt-1">
+                                    📅 {{ turno.fecha }}
+                                    &nbsp;&nbsp;
+                                    🕐 {{ turno.hora|time:"H:i" }}
+                                </p>
+
+                                <!-- Método de pago -->
+                                <p class="text-gray-footer text-xs mt-1 capitalize">
+                                    💳 {{ turno.get_metodo_pago_display }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ESTADO DEL TURNO (derecha) -->
+                        <div class="shrink-0">
+                            <span class="px-4 py-1 rounded-full text-sm font-medium
+                                {% if turno.estado == 'pendiente' %}
+                                    bg-yellow-900/40 text-yellow-400 border border-yellow-500/30
+                                {% elif turno.estado == 'confirmado' %}
+                                    bg-green-900/40 text-green-400 border border-green-500/30
+                                {% elif turno.estado == 'completado' %}
+                                    bg-blue-900/40 text-blue-400 border border-blue-500/30
+                                {% elif turno.estado == 'cancelado' %}
+                                    bg-red-900/40 text-red-400 border border-red-500/30
+                                {% endif %}
+                            ">
+                                <!--
+                                    get_estado_display → Django convierte el valor interno
+                                    del choices a su etiqueta legible.
+                                    Ejemplo: 'pendiente' → 'Pendiente'
+                                -->
+                                {{ turno.get_estado_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                {% endfor %}
+            </div>
+
+        {% else %}
+
+            <!-- ESTADO VACÍO: el usuario no tiene citas aún -->
+            <div class="text-center py-20 bg-tarjeta-barbero border border-gold-main/20 rounded-2xl">
+                <img src="{% static 'img/Logos/the-pack-dorado.svg' %}" 
+                width="180" height="180" 
+                alt="The Pack Logo Hero"
+                class="mx-auto block">
+                <h2 class="text-white font-barber text-xl mb-2">No tienes citas aún</h2>
+                <p class="text-gray-footer text-sm mb-6">
+                    Reserva con tu barbero favorito y aparecerá aquí.
+                </p>
+                <a
+                    href="{% url 'crear_turno_general' %}"
+                    class="bg-gold-main hover:bg-gold-dark text-black font-barber font-semibold
+                           px-6 py-3 rounded-xl transition-colors duration-200"
+                >
+                    Reservar ahora
+                </a>
+            </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %} 

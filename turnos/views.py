@@ -8,9 +8,6 @@ from .models import Turno
 from .forms import TurnoForm 
 
 
-
-from .forms import TurnoForm
-
 def crear_turno(request, barbero_id=None):
     """
     Vista principal para crear un turno.
@@ -19,7 +16,7 @@ def crear_turno(request, barbero_id=None):
       - /turnos/crear/<id>/    → con barbero preseleccionado
     """
 
-# Traemos todos los barberos y servicios de la BD para mostrar en el formulario
+    # Traemos todos los barberos y servicios de la BD para mostrar en el formulario
     barberos = Barbero.objects.all()
     servicios = Servicio.objects.all()
 
@@ -109,24 +106,44 @@ def crear_turno(request, barbero_id=None):
 def mis_citas(request):
     """
     Muestra los turnos del cliente logueado.
-    Si no está autenticado, lo redirige al login.
+    Si no está autenticado, lo redirige al login o permite busqueda por correo.
     """
+    turnos = []
+    email_buscado = None
 
     # Si no inició sesión, no tiene citas que mostrar
-    if not request.user.is_authenticated:
-        return redirect('login')
+    if  request.user.is_authenticated:
 
-    # Buscamos el Cliente asociado al usuario logueado
-    try:
-        cliente = Cliente.objects.get(email=request.user.email)
-        # Traemos sus turnos ordenados del más reciente al más antiguo
-        turnos = Turno.objects.filter(
-            cliente=cliente
-        ).order_by('-fecha', '-hora')
-    except Cliente.DoesNotExist:
-        # Si aún no tiene perfil de cliente, lista vacía
-        turnos = []
+        # Usuario logueado: buscamos por su email automáticamente
+        try:
+            cliente = Cliente.objects.get(email=request.user.email)
+            # Traemos sus turnos ordenados del más reciente al más antiguo
+            turnos = Turno.objects.filter(
+                cliente=cliente
+            ).order_by('-fecha', '-hora')
+        except Cliente.DoesNotExist:
+            # Si aún no tiene perfil de cliente, lista vacía
+            turnos = []
 
+    elif request.method == 'POST':
+
+        # Usuario invitado: busca por el email que ingresó
+        email_buscado = request.POST.get('email_busqueda', '').strip()
+
+        try:
+
+            cliente = Cliente.objects.get(email = email_buscado)
+            turnos = Turno.objects.filter(
+                cliente = cliente
+            ).order_by('-fecha', '-hora')
+        
+        except Cliente.DoesNotExist:
+
+            # Email no encontrado en la BD
+            messages.error(request, 'No encontramos citas con este correo.')
+
+        
     return render(request, 'turnos/mis_citas.html', {
         'turnos': turnos,
+        'email_buscado': email_buscado,
     })
