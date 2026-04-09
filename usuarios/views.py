@@ -10,6 +10,7 @@ from django.contrib import messages
 # messages → sistema de Django para mostrar mensajes temporales
 # (errores, éxitos) que desaparecen después de mostrarse
 from .models import Usuario
+from clientes.models import Cliente
 
 # ===== VISTA DE LOGIN =====
 
@@ -89,6 +90,16 @@ def vista_registro(request):
                     password=password1,
                     email=email,
                     rol='cliente'   # todo usuario que se registre es cliente por defecto
+                )
+
+                # ── NUEVO: crear el Cliente vinculado al usuario ──────
+                # Importa Cliente al inicio del archivo (ver abajo)
+                # Esto garantiza que cada usuario registrado tenga su
+                # perfil de Cliente listo para asociar turnos
+                Cliente.objects.create(
+                    usuario=usuario,        # ← vinculamos el User al Cliente
+                    nombre=username,        # nombre inicial = username
+                    email=email             # mismo email del registro
                 )
 
                 login(request, usuario)     # lo logueamos automáticamente al registrarse
