@@ -38,16 +38,25 @@ def crear_turno(request, barbero_id=None):
             
             # ── Determinar el cliente ──────────────────────────────
             if request.user.is_authenticated:
+                
+                    # Primero intentamos obtener el cliente por la relación directa usuario→cliente
+                    try:
+                        cliente = request.user.cliente
 
-                # Buscamos por la relación directa usuario→cliente
-                # Si no existe, lo creamos con su username
-                cliente, _ = Cliente.objects.get_or_create(
-                    usuario=request.user,
-                    defaults= {
-                        'nombre': request.user.username,
-                        'email': request.user.email
-                        }
-                )
+                    except Cliente.DoesNotExist:
+                        # No tiene cliente vinculado aún — puede ser un usuario antiguo
+                        # Intentamos encontrarlo por email antes de crear uno nuevo
+                        cliente, created = Cliente.objects.get_or_create(
+                            email=request.user.email,
+                            defaults={
+                                'nombre': request.user.username,
+                            }
+                        )
+                        # Si lo encontramos por email, lo vinculamos al usuario para el futuro
+                        if not created or cliente.usuario is None:
+                            cliente.usuario = request.user
+                            cliente.save()
+
             else:
 
                 # Usuario invitado: tomamos los datos del formulario
