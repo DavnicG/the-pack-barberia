@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
+from rest_framework import viewsets
+from .serializers import TurnoSerializer
 
 from barberos.models import Barbero
 from servicios.models import Servicio
@@ -184,3 +186,10 @@ def horas_ocupadas(request):
     ocupadas = [h.strftime('%H:%M') for h in turnos]
 
     return JsonResponse ({'ocupadas': ocupadas})
+
+# ── API REST ─────
+
+class TurnoViewSet (viewsets.ModelViewSet):
+
+    queryset = Turno.objects.all()
+    serializer_class = TurnoSerializer
