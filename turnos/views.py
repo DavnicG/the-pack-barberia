@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import JsonResponse
 
 from barberos.models import Barbero
 from servicios.models import Servicio
@@ -149,3 +150,37 @@ def mis_citas(request):
         'turnos': turnos,
         'email_buscado': email_buscado,
     })
+
+def horas_ocupadas(request):
+
+    """
+    Vista AJAX que devuelve las horas ya reservadas de un barbero en una fecha.
+    El JS del formulario la consulta cada vez que cambia barbero o fecha.
+
+    Recibe por GET:
+        barbero_id → ID del barbero seleccionado
+        fecha      → fecha en formato YYYY-MM-DD
+
+    Devuelve JSON:
+        { "ocupadas": ["09:00", "10:30", ...] }
+    """
+
+    barbero_id = request.GET.get('barbero_id')
+    fecha = request.GET.get('fecha')
+
+    # Si faltan parámetros, devolvemos lista vacía
+    if not barbero_id or not fecha:
+        return JsonResponse({'ocupadas': []})
+    
+    # Buscamos los turnos activos (pendiente o confirmado) de ese barbero en esa fecha
+    turnos = Turno.objects.filter(
+        barbero_id = barbero_id,
+        fecha = fecha,
+        estado__in = ['pendiente', 'confirmado']
+    ).values_list('hora', flat=True)    #→ devuelve solo la columna hora como lista plana
+                                        # Ejemplo: [datetime.time(9, 0), datetime.time(10, 30)]
+    
+    # Convertimos los objetos time a strings "HH:MM" para enviarlos como JSON
+    ocupadas = [h.strftime('%H:%M') for h in turnos]
+
+    return JsonResponse ({'ocupadas': ocupadas})

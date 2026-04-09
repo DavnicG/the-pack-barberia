@@ -8,4 +8,6 @@ urlpatterns = [
     path('crear/', views.crear_turno, name='crear_turno_general'),
     # Ruta para Mis Citas
     path('mis-citas/', views.mis_citas, name='mis_citas'),
+    #URL para el AJAX de horas ocupadas
+    path('horas-ocupadas/', views.horas_ocupadas, name='horas_ocupadas'),
 ]

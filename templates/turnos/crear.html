@@ -315,7 +315,7 @@
                                 name="telefono" 
                                 placeholder="Ej:3001234567"
                                 pattern="^\+?[\d\s\-]{7,15}$"
-                                title="Solo números, espacios, + y guiones. Entre 7 y 15 caracteres."
+                                title="Solo números, espacios, + y guiones. Entre 7 y 15 caracteres." 
                                 class="w-full bg-black-main border border-gold-main/20 focus:border-gold-main
                                        rounded-xl px-4 py-3 text-white outline-none transition-colors"
                                 required>
@@ -367,30 +367,14 @@
 </section>
 
 <script>
-/*
-    =========================================================
-    JAVASCRIPT DE LA PÁGINA
-    DOMContentLoaded garantiza que el HTML ya fue cargado y
-    parseado antes de que este código empiece a ejecutarse.
-    =========================================================
-*/
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ─────────────────────────────────────────────────────
-    // 1. FECHA MÍNIMA
-    // Evita que el usuario elija un día anterior a hoy.
-    // El input type="date" usa formato YYYY-MM-DD.
-    // ─────────────────────────────────────────────────────
+    // ─── 1. FECHA MÍNIMA ────────────────────────────────────────
     const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('input-fecha').setAttribute('min', hoy);
+    const inputFecha = document.getElementById('input-fecha');
+    inputFecha.setAttribute('min', hoy);
 
-    // ─────────────────────────────────────────────────────
-    // 2. TARJETAS SELECCIONABLES
-    // Función reutilizable para barbero, servicio y pago.
-    // Al hacer click:
-    // 1) quitamos el estilo activo de todas las tarjetas del grupo
-    // 2) activamos visualmente solo la elegida
-    // ─────────────────────────────────────────────────────
+    // ─── 2. TARJETAS SELECCIONABLES (sin cambios) ───────────────
     function activarTarjeta(selector) {
         document.querySelectorAll(selector).forEach(function (card) {
             card.addEventListener('click', function () {
@@ -403,60 +387,120 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
-
     activarTarjeta('.barbero-card');
     activarTarjeta('.servicio-card');
     activarTarjeta('.pago-card');
 
-    // ─────────────────────────────────────────────────────
-    // 3. GENERAR BOTONES DE HORA
-    // Se crean dinámicamente y se insertan en la grilla.
-    // ─────────────────────────────────────────────────────
-    const grillaHoras = document.getElementById('grilla-horas');
-    const horaInput   = document.getElementById('input-hora');
-    const horaTexto   = document.getElementById('hora-seleccionada');
-
-    const horas = [
+    // ─── 3. LISTA DE HORAS DISPONIBLES ──────────────────────────
+    const HORAS = [
         '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
         '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
         '17:00', '17:30', '18:00', '18:30'
     ];
 
-    horas.forEach(function (h) {
-        const btn = document.createElement('button');
+    const grillaHoras = document.getElementById('grilla-horas');
+    const horaInput   = document.getElementById('input-hora');
+    const horaTexto   = document.getElementById('hora-seleccionada');
 
-        // type="button" evita que al pulsar se envíe el formulario accidentalmente
-        btn.type = 'button';
-        btn.className = 'hora-btn border border-gold-main/20 text-gray-footer rounded-lg py-2 text-sm hover:border-gold-main hover:text-gold-main transition-all duration-150';
+    // Genera todos los botones de hora una sola vez al cargar la página
+    function generarBotones() {
+        grillaHoras.innerHTML = '';
 
-        // Guardamos la hora en un data-attribute para leerla al hacer click
-        btn.dataset.hora = h;
-        btn.textContent  = h;
+        HORAS.forEach(function (h) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.dataset.hora = h;
+            btn.textContent  = h;
+            btn.className    = 'hora-btn border border-gold-main/20 text-gray-footer rounded-lg py-2 text-sm transition-all duration-150';
 
-        grillaHoras.appendChild(btn);
-    });
+            // Al hacer click: selecciona la hora si no está ocupada
+            btn.addEventListener('click', function () {
+                if (this.disabled) return;
 
-    // ─────────────────────────────────────────────────────
-    // 4. SELECCIÓN DE HORA
-    // Al hacer click en un botón de hora:
-    // 1) limpiamos el estilo activo de todos los botones
-    // 2) activamos visualmente el elegido
-    // 3) guardamos la hora en el input oculto
-    // 4) mostramos confirmación visual al usuario
-    // ─────────────────────────────────────────────────────
-    document.querySelectorAll('.hora-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.hora-btn').forEach(function (b) {
-                b.classList.remove('bg-gold-main', 'text-black', 'border-gold-main');
-                b.classList.add('border-gold-main/20', 'text-gray-footer');
+                document.querySelectorAll('.hora-btn').forEach(function (b) {
+                    b.classList.remove('bg-gold-main', 'text-black', 'border-gold-main');
+                    b.classList.add('border-gold-main/20', 'text-gray-footer');
+                });
+
+                this.classList.add('bg-gold-main', 'text-black', 'border-gold-main');
+                this.classList.remove('border-gold-main/20', 'text-gray-footer');
+
+                horaInput.value       = this.dataset.hora;
+                horaTexto.textContent = 'Hora seleccionada: ' + this.dataset.hora;
             });
 
-            this.classList.add('bg-gold-main', 'text-black', 'border-gold-main');
-            this.classList.remove('border-gold-main/20', 'text-gray-footer');
-
-            horaInput.value        = this.dataset.hora;
-            horaTexto.textContent  = 'Hora seleccionada: ' + this.dataset.hora;
+            grillaHoras.appendChild(btn);
         });
+    }
+
+    generarBotones();
+
+    // ─── 4. CONSULTAR HORAS OCUPADAS AL SERVIDOR ────────────────
+    /*
+        Esta función hace un fetch (petición AJAX) a /turnos/horas-ocupadas/
+        pasando el barbero y la fecha como parámetros.
+        El servidor devuelve JSON: { "ocupadas": ["09:00", "10:30"] }
+        Luego deshabilita visualmente esos botones en la grilla.
+    */
+    function actualizarHorasOcupadas() {
+        const barberoRadio = document.querySelector('input[name="barbero"]:checked');
+        const fecha        = inputFecha.value;
+
+        // Necesitamos ambos valores para hacer la consulta
+        if (!barberoRadio || !fecha) return;
+
+        const barberoId = barberoRadio.value;
+
+        // Construimos la URL con los parámetros
+        // Ejemplo: /turnos/horas-ocupadas/?barbero_id=1&fecha=2026-04-10
+        fetch(`/turnos/horas-ocupadas/?barbero_id=${barberoId}&fecha=${fecha}`)
+            .then(res => res.json())
+            .then(data => {
+                // data.ocupadas → array de strings con las horas bloqueadas
+
+                // Resetear primero todos los botones (limpiar estado anterior)
+                document.querySelectorAll('.hora-btn').forEach(function (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove(
+                        'opacity-40', 'cursor-not-allowed', 'line-through',
+                        'bg-red-900/30', 'border-red-500/30', 'text-red-400/60'
+                    );
+                    btn.classList.add('border-gold-main/20', 'text-gray-footer');
+                    btn.title = '';
+                });
+
+                // Limpiar hora seleccionada si estaba ocupada
+                if (data.ocupadas.includes(horaInput.value)) {
+                    horaInput.value       = '';
+                    horaTexto.textContent = 'Ninguna hora seleccionada';
+                }
+
+                // Deshabilitar y marcar visualmente las horas ocupadas
+                data.ocupadas.forEach(function (horaOcupada) {
+                    const btn = document.querySelector(`.hora-btn[data-hora="${horaOcupada}"]`);
+                    if (!btn) return;
+
+                    btn.disabled = true;
+                    // Estilo visual: tachado, rojizo, semi-transparente
+                    btn.classList.add(
+                        'opacity-40', 'cursor-not-allowed', 'line-through',
+                        'bg-red-900/30', 'border-red-500/30', 'text-red-400/60'
+                    );
+                    btn.classList.remove('border-gold-main/20', 'text-gray-footer');
+                    btn.title = 'Horario ocupado';
+                });
+            });
+    }
+
+    // ─── 5. EVENTOS QUE DISPARAN LA CONSULTA ────────────────────
+    // Cada vez que el usuario cambia barbero o fecha, reconsultamos
+
+    // Cuando cambia la fecha
+    inputFecha.addEventListener('change', actualizarHorasOcupadas);
+
+    // Cuando cambia el barbero (los radios están ocultos, escuchamos clicks en las tarjetas)
+    document.querySelectorAll('.barbero-card').forEach(function (card) {
+        card.addEventListener('click', actualizarHorasOcupadas);
     });
 
 });
