@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from rest_framework import viewsets
@@ -195,6 +195,42 @@ def horas_ocupadas(request):
     ocupadas = [h.strftime('%H:%M') for h in turnos]
 
     return JsonResponse ({'ocupadas': ocupadas})
+
+def cancelar_turno(request, turno_id):
+    """
+    Vista para cancelar un turno existente.
+    
+    Solo permite cancelar si:
+    - El turno pertenece al cliente logueado (seguridad)
+    - El estado es 'pendiente' o 'confirmado' (no cancelar lo ya completado)
+    
+    turno_id → viene de la URL, identifica qué turno cancelar
+    """
+
+    # Buscamos el turno en la BD por su ID
+    # Si no existe, Django devuelve error 404 automáticamente
+    turno = get_object_or_404(Turno, id=turno_id)
+
+    # ── Seguridad: verificar que el turno le pertenece al usuario logueado ──
+    # Evita que alguien cancele el turno de otro cliente poniendo otro ID en la URL
+    if request.user.is_authenticated:
+        try:
+            cliente = request.user.cliente
+        except Cliente.DoesNotExist :
+            messages.error(request, 'No tienes permiso para cancelar este turno.')
+            return redirect('mis_citas')
+    
+    # ── Verificar que el turno se puede cancelar ──
+    # No tiene sentido cancelar algo ya completado o ya cancelado
+    if turno.estado in ['pendiente', 'confirmado']:
+
+        turno.estado = 'cancelado'  # Cambiamos el estado
+        turno.save()                # Guardamos en la BD
+        messages.success(request, 'Tu cita fue cancelada correctamente')
+    else:
+        messages.error(request, 'Este turno no se puede cancelar')
+    
+    return redirect('mis_citas')
 
 # ── API REST ─────
 

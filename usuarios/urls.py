@@ -15,4 +15,7 @@ urlpatterns = [
 
     # /logout/ → cierra la sesión y redirige al inicio
     path('logout/', views.vista_logout, name= 'logout'),
+
+    # /api/login/ -> Se usa para llamar por medio de la API para la APP movil
+    path('api/login/', views.login_api, name='login_api'),
 ]

@@ -132,11 +132,13 @@
                             </div>
                         </div>
 
-                        <!-- ESTADO DEL TURNO (derecha) -->
-                        <div class="shrink-0">
+                        <!-- ESTADO Y BOTÓN DE CANCELAR (derecha de la tarjeta) -->
+                        <div class="shrink-0 flex flex-col items-end gap-3">
+
+                            <!-- Badge del estado actual del turno -->
                             <span class="px-4 py-1 rounded-full text-sm font-medium
                                 {% if turno.estado == 'pendiente' %}
-                                    bg-yellow-900/40 text-yellow-400 border border-yellow-500/30
+                                    bg-gold-main-900/40 text-yellow-400 border border-yellow-500/30
                                 {% elif turno.estado == 'confirmado' %}
                                     bg-green-900/40 text-green-400 border border-green-500/30
                                 {% elif turno.estado == 'completado' %}
@@ -145,14 +147,40 @@
                                     bg-red-900/40 text-red-400 border border-red-500/30
                                 {% endif %}
                             ">
-                                <!--
-                                    get_estado_display → Django convierte el valor interno
-                                    del choices a su etiqueta legible.
-                                    Ejemplo: 'pendiente' → 'Pendiente'
-                                -->
                                 {{ turno.get_estado_display }}
                             </span>
+
+                            <!--
+                                Solo mostramos el botón si el turno está pendiente o confirmado.
+                                No tiene sentido cancelar algo completado o ya cancelado.
+                                
+                                El formulario usa POST porque estamos modificando datos en la BD.
+                                GET es solo para consultar, POST para cambiar cosas (buena práctica).
+                            -->
+                            {% if turno.estado in 'pendiente,confirmado' %}
+                                <form
+                                    method="POST"
+                                    action="{% url 'cancelar_turno' turno.id %}"
+                                    onsubmit="return confirm('¿Seguro que quieres cancelar esta cita?')"
+                                >
+                                    <!--
+                                        onsubmit → muestra un diálogo de confirmación antes de enviar.
+                                        Si el usuario hace click en Cancelar, el formulario NO se envía.
+                                        Si hace click en Aceptar, sí se envía y cancela el turno.
+                                    -->
+                                    {% csrf_token %}
+                                    <button
+                                        type="submit"
+                                        class="text-red-400 border border-red-500/30 hover:bg-red-900/30
+                                            px-4 py-1 rounded-full text-sm transition-colors duration-200"
+                                    >
+                                        Cancelar cita
+                                    </button>
+                                </form>
+                            {% endif %}
+
                         </div>
+
                     </div>
 
                 {% endfor %}

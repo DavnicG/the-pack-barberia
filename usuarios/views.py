@@ -12,6 +12,14 @@ from django.contrib import messages
 from .models import Usuario
 from clientes.models import Cliente
 
+# importaciones para conectar la App movil
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+
 # ===== VISTA DE LOGIN =====
 
 def vista_login(request):
@@ -113,3 +121,42 @@ def vista_logout(request):
 
     logout(request)             # cierra la sesión, borra la cookie
     return redirect('index')    # manda al inicio sin sesión
+
+# Esta vista recibe email y contraseña, verifica con la base de datos
+# y devuelve un token si las credenciales son correctas
+@api_view(['POST'])
+@permission_classes([AllowAny])     # esta vista no requiere autenticación previa
+
+def login_api(request):
+
+    # Extraemos email y contraseña del cuerpo de la petición
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    # Validamos que llegaron los dos campos
+    if not email or not password:
+        return Response(
+            {'error': 'Email y contraseña son requeridos'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Primero buscamos el usuario por email
+    try:
+        usuario = Usuario.objects.get(email=email)
+        # Luego verificamos la contraseña con su username real
+        user = authenticate(request, username=usuario.username, password=password)
+    except Usuario.DoesNotExist:
+        user = None
+    
+    if user is not None:
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response(
+            {'error': 'Credenciales incorrectas'},
+            status = status.HTTP_401_UNAUTHORIZED
+        )
