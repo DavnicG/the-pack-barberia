@@ -10,6 +10,10 @@ from clientes.models import Cliente
 from .models import Turno
 from .forms import TurnoForm 
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 
 def crear_turno(request, barbero_id=None):
     """
@@ -238,3 +242,188 @@ class TurnoViewSet (viewsets.ModelViewSet):
 
     queryset = Turno.objects.all()
     serializer_class = TurnoSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_mis_turnos(request):
+
+    """
+    Endpoint REST para la app móvil.
+    Devuelve los turnos del usuario autenticado usando el token.
+
+    - @api_view(['GET'])        → solo acepta peticiones GET
+    - @permission_classes(...)  → Django verifica el token automáticamente.
+                                  Si no hay token válido, responde 401 sin
+                                  llegar a ejecutar el código de abajo.
+
+    Flujo:
+        Token en header → Django resuelve request.user →
+        buscamos su Cliente → filtramos sus Turnos → devolvemos JSON
+    """
+
+    try:
+        # Obtenemos el perfil Cliente del usuario autenticado
+        # request.user viene resuelto automáticamente desde el token
+        cliente = request.user.cliente
+    
+    except Exception:
+        # Si el usuario no tiene perfil Cliente vinculado,
+        # devolvemos lista vacía (no un error) para no romper la app
+        return Response([])
+    
+    # Filtramos solo los turnos de este cliente,
+    # ordenados del más reciente al más antiguo
+    turnos = Turno.objects.filter(
+        cliente=cliente
+    ).order_by('-fecha', '-hora')
+
+
+    # Serializamos y devolvemos como JSON
+    serializer = TurnoSerializer(turnos, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_barberos_disponibles(request):
+    """
+    Devuelve la lista de todos los barberos disponibles.
+    La app la usa para mostrar el selector de barbero en el formulario.
+    """
+    from barberos.models import Barbero
+
+    # Traemos todos los barberos con los campos que necesita la app
+    barberos = Barbero.objects.values('id', 'nombre', 'especialidad')
+    return Response(list(barberos))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_servicios_disponibles(request):
+    """
+    Devuelve la lista de todos los servicios disponibles con su precio.
+    La app la usa para mostrar el selector de servicio en el formulario.
+    """
+    from servicios.models import Servicio
+
+    # Traemos todos los servicios con los campos que necesita la app
+    servicios = Servicio.objects.values('id', 'nombre', 'precio', 'duracion_min')
+    return Response(list(servicios))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_horas_ocupadas(request):
+    """
+    Recibe barbero_id y fecha por parámetros GET.
+    Devuelve las horas ya reservadas para ese barbero en esa fecha.
+    La app las marca como no disponibles en el selector de hora.
+
+    Ejemplo de petición:
+    GET /turnos/api/horas-ocupadas/?barbero_id=1&fecha=2026-07-10
+    """
+    barbero_id = request.GET.get('barbero_id')
+    fecha      = request.GET.get('fecha')
+
+    if not barbero_id or not fecha:
+        return Response({'ocupadas': []})
+
+    # Buscamos turnos activos de ese barbero en esa fecha
+    turnos = Turno.objects.filter(
+        barbero_id  = barbero_id,
+        fecha       = fecha,
+        estado__in  = ['pendiente', 'confirmado']
+    ).values_list('hora', flat=True)
+
+    # Convertimos los objetos time a strings "HH:MM"
+    ocupadas = [h.strftime('%H:%M') for h in turnos]
+    return Response({'ocupadas': ocupadas})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_crear_turno(request):
+    """
+    Crea un nuevo turno para el usuario autenticado.
+
+    Recibe por POST (JSON):
+        barbero_id   → ID del barbero seleccionado
+        servicio_id  → ID del servicio seleccionado
+        fecha        → Fecha en formato YYYY-MM-DD
+        hora         → Hora en formato HH:MM
+        metodo_pago  → 'efectivo', 'tarjeta' o 'transferencia'
+
+    Responde:
+        201 → turno creado exitosamente
+        400 → horario ocupado o datos inválidos
+        404 → usuario sin perfil de cliente
+    """
+    from barberos.models import Barbero
+    from servicios.models import Servicio
+
+    # ── Obtenemos el cliente del usuario autenticado ──────────────
+    try:
+        cliente = request.user.cliente
+    except Exception:
+        return Response(
+            {'error': 'Tu usuario no tiene perfil de cliente vinculado.'},
+            status=404
+        )
+
+    # ── Leemos los datos enviados por la app ──────────────────────
+    barbero_id  = request.data.get('barbero_id')
+    servicio_id = request.data.get('servicio_id')
+    fecha       = request.data.get('fecha')       # formato: YYYY-MM-DD
+    hora        = request.data.get('hora')         # formato: HH:MM
+    metodo_pago = request.data.get('metodo_pago', 'efectivo')
+
+    # ── Validación básica: todos los campos son obligatorios ──────
+    if not all([barbero_id, servicio_id, fecha, hora]):
+        return Response(
+            {'error': 'Faltan campos obligatorios: barbero, servicio, fecha y hora.'},
+            status=400
+        )
+
+    # ── Verificamos que el horario no esté ocupado ────────────────
+    horario_ocupado = Turno.objects.filter(
+        barbero_id  = barbero_id,
+        fecha       = fecha,
+        hora        = hora,
+        estado__in  = ['pendiente', 'confirmado']
+    ).exists()
+
+    if horario_ocupado:
+        return Response(
+            {'error': 'Ese horario ya está reservado. Elige otra hora.'},
+            status=400
+        )
+
+    # ── Creamos el turno ──────────────────────────────────────────
+    try:
+        barbero  = Barbero.objects.get(id=barbero_id)
+        servicio = Servicio.objects.get(id=servicio_id)
+
+        turno = Turno.objects.create(
+            cliente     = cliente,
+            barbero     = barbero,
+            servicio    = servicio,
+            fecha       = fecha,
+            hora        = hora,
+            metodo_pago = metodo_pago,
+            estado      = 'pendiente'   # Todo turno empieza como pendiente
+        )
+
+        return Response({
+            'mensaje': '¡Tu cita fue reservada con éxito!',
+            'turno_id': turno.id,
+            'fecha': fecha,
+            'hora': hora,
+            'barbero': barbero.nombre,
+            'servicio': servicio.nombre,
+        }, status=201)
+
+    except Barbero.DoesNotExist:
+        return Response({'error': 'El barbero seleccionado no existe.'}, status=400)
+    except Servicio.DoesNotExist:
+        return Response({'error': 'El servicio seleccionado no existe.'}, status=400)
+    except Exception as e:
+        return Response({'error': f'Error al crear el turno: {str(e)}'}, status=400)

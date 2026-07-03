@@ -14,4 +14,12 @@ urlpatterns = [
     # <int:turno_id> → Django captura el número del ID y lo pasa a la vista
     # Ejemplo: /turnos/cancelar/5/ → cancela el turno con ID 5
     path('cancelar/<int:turno_id>', views.cancelar_turno, name='cancelar_turno'),
+    # ── Nueva URL para la app móvil ────────────────────────
+    # Accesible en: GET /turnos/api/mis-turnos/
+    # Requiere header: Authorization: Token <token>
+    path('api/mis-turnos/',         views.api_mis_turnos,  name='api_mis_turnos'),
+    path('api/barberos/',      views.api_barberos_disponibles, name='api_barberos'),
+    path('api/servicios/',     views.api_servicios_disponibles, name='api_servicios'),
+    path('api/horas-ocupadas/', views.api_horas_ocupadas,      name='api_horas_ocupadas_app'),
+    path('api/crear/',         views.api_crear_turno,           name='api_crear_turno'),
 ]
