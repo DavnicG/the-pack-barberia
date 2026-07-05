@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/servicios/',     views.api_servicios_disponibles, name='api_servicios'),
     path('api/horas-ocupadas/', views.api_horas_ocupadas,      name='api_horas_ocupadas_app'),
     path('api/crear/',         views.api_crear_turno,           name='api_crear_turno'),
+    path('api/cancelar/<int:turno_id>/', views.api_cancelar_turno, name='api_cancelar_turno'),
 ]

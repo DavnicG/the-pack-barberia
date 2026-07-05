@@ -427,3 +427,49 @@ def api_crear_turno(request):
         return Response({'error': 'El servicio seleccionado no existe.'}, status=400)
     except Exception as e:
         return Response({'error': f'Error al crear el turno: {str(e)}'}, status=400)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_cancelar_turno(request, turno_id):
+        """
+        Cancela un turno del usuario autenticado.
+        No elimina el turno: solo cambia su estado a 'cancelado'.
+        """
+
+        try:
+            cliente = request.user.cliente
+        except Exception:
+            return Response(
+                {'error': 'Tu usuario no tiene perfil de cliente vinculado.'},
+                status=404
+            )
+
+        try:
+            turno = Turno.objects.get(id=turno_id, cliente=cliente)
+        except Turno.DoesNotExist:
+            return Response(
+                {'error': 'No se encontró el turno o no te pertenece.'},
+                status=404
+            )
+
+        if turno.estado == 'cancelado':
+            return Response(
+                {'error': 'Este turno ya fue cancelado.'},
+                status=400
+            )
+
+        if turno.estado == 'completado':
+            return Response(
+                {'error': 'No puedes cancelar un turno completado.'},
+                status=400
+            )
+
+        turno.estado = 'cancelado'
+        turno.save()
+
+        return Response({
+            'mensaje': 'Turno cancelado correctamente.',
+            'turno_id': turno.id,
+            'nuevo_estado': turno.estado,
+        }, status=200)
